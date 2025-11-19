@@ -1,0 +1,41 @@
+package com.tu.course.employee_management.exception;
+
+import lombok.NonNull;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.ErrorResponse;
+
+public class ResourceNotFoundException extends RuntimeException implements ErrorResponse {
+
+    private final ProblemDetail body;
+
+    public ResourceNotFoundException(Class<?> resource, Object id) {
+        super(extractResourceName(resource) + " with id=" + id + " was not found");
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        pd.setTitle("Resource Not Found");
+        pd.setDetail(getMessage());
+        pd.setProperty("resource", extractResourceName(resource));
+        pd.setProperty("id", id);
+
+        this.body = pd;
+    }
+
+    @Override
+    @NonNull
+    public HttpStatusCode getStatusCode() {
+        return HttpStatus.NOT_FOUND;
+    }
+
+    @Override
+    @NonNull
+    public ProblemDetail getBody() {
+        return body;
+    }
+
+    private static String extractResourceName(Class<?> resource) {
+        return resource == null ? "Resource" : resource.getSimpleName();
+    }
+
+}

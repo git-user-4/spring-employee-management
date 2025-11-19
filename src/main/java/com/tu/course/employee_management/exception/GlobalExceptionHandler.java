@@ -1,0 +1,64 @@
+package com.tu.course.employee_management.exception;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // Catches the Custom Not Found Exception
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ProblemDetail handleNotFound(ResourceNotFoundException ex,
+                                        HttpServletRequest req) {
+        ProblemDetail pd = ex.getBody();
+        pd.setInstance(URI.create(req.getRequestURI()));
+        return pd;
+    }
+
+    // For @Valid (@RequestBody requestDTO)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleRequestObjectValidation(MethodArgumentNotValidException ex,
+                                                       HttpServletRequest req) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(400);
+        pd.setTitle("Validation Failed");
+        pd.setDetail("One or more fields are invalid");
+        pd.setInstance(URI.create(req.getRequestURI()));
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        pd.setProperty("errors", errors);
+        return pd;
+    }
+
+    // For @Validate (@PathVariable and @RequestParam)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail handleRequestVariableValidation(ConstraintViolationException ex,
+                                                         HttpServletRequest req) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(400);
+        pd.setTitle("Constraint violation");
+        pd.setDetail("Invalid request parameters");
+        pd.setInstance(URI.create(req.getRequestURI()));
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(
+                v -> errors.put(v.getPropertyPath().toString(), v.getMessage())
+        );
+
+        pd.setProperty("errors", errors);
+        return pd;
+    }
+
+}

@@ -1,0 +1,2 @@
+----- Showcase (Not used) -----
+--INSERT INTO employees (id, first_name, last_name, phone_number) VALUES (nextval('employee_sequence'), 'Valentin', 'Vasilev', '08823123123'), (nextval('employee_sequence'), 'Ivan', 'Petrov', '08823123124123');
