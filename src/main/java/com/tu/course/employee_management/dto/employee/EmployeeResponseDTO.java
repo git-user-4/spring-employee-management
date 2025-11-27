@@ -5,6 +5,7 @@ public record EmployeeResponseDTO(
         String firstName,
         String lastName,
         String phoneNumber,
+        String avatarImage,
         Long departmentId,
         String departmentName
 ) {}

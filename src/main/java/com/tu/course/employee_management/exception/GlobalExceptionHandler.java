@@ -23,6 +23,15 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    // Catches the Custom Cloudinary Exception
+    @ExceptionHandler(CloudinaryException.class)
+    public ProblemDetail handleCloudinary(CloudinaryException ex,
+                                          HttpServletRequest req){
+        ProblemDetail problemDetail = ex.getBody();
+        problemDetail.setInstance(URI.create(req.getRequestURI()));
+        return problemDetail;
+    }
+
     // For @Valid (@RequestBody requestDTO)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleRequestObjectValidation(MethodArgumentNotValidException ex,

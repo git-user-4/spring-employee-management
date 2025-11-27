@@ -9,8 +9,10 @@ import com.tu.course.employee_management.model.Employee;
 import com.tu.course.employee_management.repository.EmployeeRepository;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,7 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentService departmentService;
     private final EmployeeMapper employeeMapper;
+    private final CloudinaryService cloudinaryService;
 
     @Transactional
     public Employee saveEmployee(EmployeeRequestDTO employeeRequestDTO) {
@@ -47,23 +50,16 @@ public class EmployeeService {
 
     @Transactional
     public void deleteEmployee(Long id) {
-        if (employeeRepository.existsById(id))
-            employeeRepository.deleteById(id);
-        else
-            throw new ResourceNotFoundException(Employee.class, id);
+        if (employeeRepository.existsById(id)) employeeRepository.deleteById(id);
+        else throw new ResourceNotFoundException(Employee.class, id);
 
     }
 
     @Transactional
     public Employee patchEmployeeFirstName(Long id, String newFirstName) {
-        Optional<Employee> fetchedEmployee = employeeRepository.findById(id);
-
-        if (fetchedEmployee.isPresent()) {
-            Employee newEmployee = fetchedEmployee.get();
-            newEmployee.setFirstName(newFirstName.trim());
-            return employeeRepository.save(newEmployee);
-        } else throw new ResourceNotFoundException(Employee.class, id);
-
+        Employee fetchedEmployee = getEmployeeOrThrow(id);
+        fetchedEmployee.setFirstName(newFirstName);
+        return employeeRepository.save(fetchedEmployee);
     }
 
     @Transactional
@@ -112,6 +108,22 @@ public class EmployeeService {
 
     public List<EmployeeNameProjectionDTO> getEmployeeNamesByFirstName(String firstName) {
         return employeeRepository.findByFirstName(firstName);
+    }
+
+    @Transactional
+    public Employee patchEmployeeAvatar(Long employeeId, MultipartFile avatarImage) {
+        Employee fetchedEmployee = getEmployeeOrThrow(employeeId);
+        String imagePublicId = cloudinaryService.uploadImage(avatarImage);
+        fetchedEmployee.setAvatarPublicId(imagePublicId);
+        return employeeRepository.save(fetchedEmployee);
+    }
+
+    @Transactional
+    public void deleteEmployeeAvatar(Long employeeId) {
+        Employee fetchedEmployee = getEmployeeOrThrow(employeeId);
+        cloudinaryService.deleteImage(fetchedEmployee.getAvatarPublicId());
+        fetchedEmployee.setAvatarPublicId(null);
+        employeeRepository.save(fetchedEmployee);
     }
 
 }

@@ -20,13 +20,15 @@ public class EmployeeServiceTest {
     private EmployeeService employeeService;
     private EmployeeMapper employeeMapper;
     private DepartmentService departmentService;
+    private CloudinaryService cloudinaryService;
 
     @BeforeEach
     void setUp() {
         employeeRepository = mock(EmployeeRepository.class);
         departmentService = mock(DepartmentService.class);
         employeeMapper = mock(EmployeeMapper.class);
-        employeeService = new EmployeeService(employeeRepository, departmentService, employeeMapper);
+        cloudinaryService = mock(CloudinaryService.class);
+        employeeService = new EmployeeService(employeeRepository, departmentService, employeeMapper, cloudinaryService);
     }
 
     // ============= getEmployeeOrThrow Tests =============

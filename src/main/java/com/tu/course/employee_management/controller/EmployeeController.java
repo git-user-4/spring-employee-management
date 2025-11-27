@@ -7,6 +7,7 @@ import com.tu.course.employee_management.dto.employee.EmployeeNameResponseDTO;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
 import com.tu.course.employee_management.model.Employee;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
+import com.tu.course.employee_management.service.CloudinaryService;
 import com.tu.course.employee_management.service.EmployeeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -14,10 +15,13 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -52,7 +56,7 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{id}/firstName")
     public ResponseEntity<EmployeeResponseDTO> patchEmployeeFirstName(@PathVariable @Positive Long id,
                                                                       @RequestParam @NotBlank @Size(min = 2, max = 20) String newFirstName) {
         Employee patchedEmployee = employeeService.patchEmployeeFirstName(id, newFirstName);
@@ -101,6 +105,19 @@ public class EmployeeController {
     public ResponseEntity<List<EmployeeNameResponseDTO>> getEmployeesByFirstName(@RequestParam @NotBlank String firstName) {
         List<EmployeeNameProjectionDTO> employeeNameProjectionDTOs = employeeService.getEmployeeNamesByFirstName(firstName);
         return new ResponseEntity<>(employeeMapper.toEmployeeNameResponseDTOListFromProjectionDTOList(employeeNameProjectionDTOs), HttpStatus.OK);
+    }
+
+    @PatchMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EmployeeResponseDTO> patchEmployeeAvatar(@PathVariable @Positive Long id,
+                                                                   @RequestParam MultipartFile file) {
+        Employee patchedEmployee = employeeService.patchEmployeeAvatar(id, file);
+        return ResponseEntity.ok(employeeMapper.toEmployeeResponseDTO(patchedEmployee));
+    }
+
+    @DeleteMapping("/{id}/avatar")
+    public ResponseEntity<Void> deleteEmployeeAvatar(@PathVariable @Positive Long id) {
+        employeeService.deleteEmployeeAvatar(id);
+        return ResponseEntity.ok().build();
     }
 
 }

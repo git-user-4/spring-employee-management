@@ -52,6 +52,7 @@ public class EmployeeControllerTest {
                 "John",
                 "Doe",
                 "123456789",
+                null,
                 1L,
                 "Engineering"
         );
@@ -117,6 +118,7 @@ public class EmployeeControllerTest {
                 "John",
                 "Doe",
                 "123456789",
+                null,
                 1L,
                 "Engineering"
         );
@@ -126,6 +128,7 @@ public class EmployeeControllerTest {
                 "Toma",
                 "Tomov",
                 "0875721957",
+                null,
                 2L,
                 "Sales"
         );
@@ -182,6 +185,7 @@ public class EmployeeControllerTest {
                 "John",
                 "Doe",
                 "123456789",
+                null,
                 1L,
                 "Engineering"
         );
