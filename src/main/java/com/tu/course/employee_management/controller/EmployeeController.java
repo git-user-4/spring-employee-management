@@ -1,14 +1,14 @@
 package com.tu.course.employee_management.controller;
 
 import com.tu.course.employee_management.dto.employee.EmployeeNameProjectionDTO;
-import com.tu.course.employee_management.dto.employee.EmployeeRequestDTO;
+import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
 import com.tu.course.employee_management.dto.employee.EmployeeResponseDTO;
 import com.tu.course.employee_management.dto.employee.EmployeeNameResponseDTO;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
 import com.tu.course.employee_management.model.Employee;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
-import com.tu.course.employee_management.service.CloudinaryService;
 import com.tu.course.employee_management.service.EmployeeService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -21,7 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -32,12 +31,6 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
     private final EmployeeMapper employeeMapper;
-
-    @PostMapping
-    public ResponseEntity<EmployeeResponseDTO> saveEmployee(@Valid @RequestBody EmployeeRequestDTO employeeRequestDTO) {
-        Employee savedEmployee = employeeService.saveEmployee(employeeRequestDTO);
-        return new ResponseEntity<>(employeeMapper.toEmployeeResponseDTO(savedEmployee), HttpStatus.CREATED);
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeResponseDTO> getEmployeeById(@PathVariable @Positive Long id) {
@@ -65,7 +58,7 @@ public class EmployeeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<EmployeeResponseDTO> putEmployee(@PathVariable @Positive Long id,
-                                                           @Valid @RequestBody EmployeeRequestDTO employeeRequestDTO) {
+                                                           @Valid @RequestBody RegisterRequestDTO employeeRequestDTO) {
         Employee newEmployee = employeeService.putEmployee(id, employeeRequestDTO);
         return new ResponseEntity<>(employeeMapper.toEmployeeResponseDTO(newEmployee), HttpStatus.OK);
     }

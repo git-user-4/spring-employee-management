@@ -2,6 +2,7 @@ package com.tu.course.employee_management.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,6 +33,30 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    // Catches the Custom Duplicate Resource Exception
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ProblemDetail handleDuplicateResource(DuplicateResourceException ex,
+                                                 HttpServletRequest req) {
+
+        ProblemDetail pd = ex.getBody();
+        pd.setInstance(URI.create(req.getRequestURI()));
+        return pd;
+    }
+
+    // Catches DB Constraint Violations
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex,
+                                                      HttpServletRequest req) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(409);
+        pd.setTitle("Data Integrity Violation");
+        pd.setDetail("Data key constraint violated");
+        pd.setInstance(URI.create(req.getRequestURI()));
+        pd.setProperty("reason", ex.getMostSpecificCause().getMessage());
+
+        return pd;
+    }
+
     // For @Valid (@RequestBody requestDTO)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleRequestObjectValidation(MethodArgumentNotValidException ex,
@@ -57,7 +82,7 @@ public class GlobalExceptionHandler {
                                                          HttpServletRequest req) {
 
         ProblemDetail pd = ProblemDetail.forStatus(400);
-        pd.setTitle("Constraint violation");
+        pd.setTitle("Input Constraint Violation");
         pd.setDetail("Invalid request parameters");
         pd.setInstance(URI.create(req.getRequestURI()));
 

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -36,6 +37,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     // --- Projections ---
     List<EmployeeNameProjection> findByLastName(String lastName);
+
+    Optional<Employee> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 
     @Query("SELECT new com.tu.course.employee_management.dto.employee.EmployeeNameProjectionDTO(e.firstName, e.lastName) FROM Employee e WHERE e.firstName = :firstName")
     List<EmployeeNameProjectionDTO> findByFirstName(@Param("firstName") String firstName);

@@ -1,7 +1,7 @@
 package com.tu.course.employee_management.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tu.course.employee_management.dto.employee.EmployeeRequestDTO;
+import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
 import com.tu.course.employee_management.dto.employee.EmployeeResponseDTO;
 import com.tu.course.employee_management.exception.ResourceNotFoundException;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
@@ -13,6 +13,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,6 +35,9 @@ public class EmployeeControllerTest {
     @MockitoBean
     private EmployeeMapper employeeMapper;
 
+    @MockitoBean
+    private PasswordEncoder passwordEncoder;
+
     // ============= getEmployeeById Tests =============
     @Test
     void getEmployeeById_returnsMappedDto() throws Exception {
@@ -49,6 +53,7 @@ public class EmployeeControllerTest {
 
         EmployeeResponseDTO responseDTO = new EmployeeResponseDTO(
                 id,
+                "doe18@abv.bg",
                 "John",
                 "Doe",
                 "123456789",
@@ -115,6 +120,7 @@ public class EmployeeControllerTest {
 
         EmployeeResponseDTO responseDTO1 = new EmployeeResponseDTO(
                 1L,
+                "doe18@abv.bg",
                 "John",
                 "Doe",
                 "123456789",
@@ -125,6 +131,7 @@ public class EmployeeControllerTest {
 
         EmployeeResponseDTO responseDTO2 = new EmployeeResponseDTO(
                 2L,
+                "tommy@gmail.com",
                 "Toma",
                 "Tomov",
                 "0875721957",
@@ -161,11 +168,13 @@ public class EmployeeControllerTest {
     // =================================================
 
 
-    // ============= saveEmployee Tests =============
+    // ============= registerEmployee Tests =============
     @Test
-    void saveEmployee_returnsMappedDto() throws Exception {
+    void registerEmployee_returnsMappedDto() throws Exception {
         // Given
-        EmployeeRequestDTO employeeRequestDTO = new EmployeeRequestDTO(
+        RegisterRequestDTO employeeRequestDTO = new RegisterRequestDTO(
+                "johnny4@abv.bg",
+                "_secretPass_",
                 "John",
                 "Doe",
                 "0123456789",
@@ -174,6 +183,8 @@ public class EmployeeControllerTest {
         );
 
         Employee employee = Employee.builder()
+                .email("johnny4@abv.bg")
+                .password("_secretPass_")
                 .firstName("John")
                 .lastName("Doe")
                 .phoneNumber("123456789")
@@ -182,6 +193,7 @@ public class EmployeeControllerTest {
 
         EmployeeResponseDTO responseDTO = new EmployeeResponseDTO(
                 1L,
+                "johnny4@abv.bg",
                 "John",
                 "Doe",
                 "123456789",
@@ -190,7 +202,7 @@ public class EmployeeControllerTest {
                 "Engineering"
         );
 
-        Mockito.when(employeeService.saveEmployee(employeeRequestDTO))
+        Mockito.when(employeeService.registerEmployee(employeeRequestDTO))
                 .thenReturn(employee);
 
         Mockito.when(employeeMapper.toEmployeeResponseDTO(employee))

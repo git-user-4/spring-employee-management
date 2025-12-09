@@ -1,6 +1,6 @@
 package com.tu.course.employee_management.service;
 
-import com.tu.course.employee_management.dto.employee.EmployeeRequestDTO;
+import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
 import com.tu.course.employee_management.exception.ResourceNotFoundException;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
 import com.tu.course.employee_management.model.Department;
@@ -8,6 +8,7 @@ import com.tu.course.employee_management.model.Employee;
 import com.tu.course.employee_management.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ public class EmployeeServiceTest {
     private EmployeeMapper employeeMapper;
     private DepartmentService departmentService;
     private CloudinaryService cloudinaryService;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
@@ -28,7 +30,8 @@ public class EmployeeServiceTest {
         departmentService = mock(DepartmentService.class);
         employeeMapper = mock(EmployeeMapper.class);
         cloudinaryService = mock(CloudinaryService.class);
-        employeeService = new EmployeeService(employeeRepository, departmentService, employeeMapper, cloudinaryService);
+        passwordEncoder = mock(PasswordEncoder.class);
+        employeeService = new EmployeeService(employeeRepository, departmentService, employeeMapper, cloudinaryService, passwordEncoder);
     }
 
     // ============= getEmployeeOrThrow Tests =============
@@ -73,11 +76,13 @@ public class EmployeeServiceTest {
     // =================================================
 
 
-    // ============= saveEmployee Tests =============
+    // ============= registerEmployee Tests =============
     @Test
-    void saveEmployee_savesEmployeeWithDepartment_whenDepartmentNameProvided() {
+    void registerEmployee_registersEmployeeWithDepartment_whenDepartmentNameProvided() {
         // Arrange
-        EmployeeRequestDTO request = new EmployeeRequestDTO(
+        RegisterRequestDTO request = new RegisterRequestDTO(
+                "doe18@abv.bg",
+                "_secretPass_",
                 "John",
                 "Doe",
                 "0123456789",
@@ -112,7 +117,7 @@ public class EmployeeServiceTest {
         when(employeeRepository.save(employeeMapped)).thenReturn(savedEmployee);
 
         // Act
-        Employee result = employeeService.saveEmployee(request);
+        Employee result = employeeService.registerEmployee(request);
 
         // Assert
         assertNotNull(result);
@@ -129,7 +134,9 @@ public class EmployeeServiceTest {
     @Test
     void saveEmployee_savesEmployeeWithoutDepartment_whenDepartmentNameIsNull() {
         // Arrange
-        EmployeeRequestDTO request = new EmployeeRequestDTO(
+        RegisterRequestDTO request = new RegisterRequestDTO(
+                "doe18@abv.bg",
+                "_secretPass_",
                 "John",
                 "Doe",
                 "0123456789",
@@ -153,7 +160,7 @@ public class EmployeeServiceTest {
         when(employeeRepository.save(employeeMapped)).thenReturn(savedEmployee);
 
         // Act
-        Employee result = employeeService.saveEmployee(request);
+        Employee result = employeeService.registerEmployee(request);
 
         // Assert
         assertNotNull(result);

@@ -2,6 +2,8 @@ package com.tu.course.employee_management.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "employees")
@@ -15,6 +17,12 @@ public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -30,6 +38,7 @@ public class Employee {
     private String avatarPublicId;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.SET_NULL) // Set department FK to null on department delete
     private Department department;
 
 }

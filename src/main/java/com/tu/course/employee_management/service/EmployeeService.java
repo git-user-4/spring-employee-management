@@ -1,7 +1,8 @@
 package com.tu.course.employee_management.service;
 
 import com.tu.course.employee_management.dto.employee.EmployeeNameProjectionDTO;
-import com.tu.course.employee_management.dto.employee.EmployeeRequestDTO;
+import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
+import com.tu.course.employee_management.exception.DuplicateResourceException;
 import com.tu.course.employee_management.exception.ResourceNotFoundException;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
 import com.tu.course.employee_management.model.Department;
@@ -9,7 +10,7 @@ import com.tu.course.employee_management.model.Employee;
 import com.tu.course.employee_management.repository.EmployeeRepository;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,13 +27,21 @@ public class EmployeeService {
     private final DepartmentService departmentService;
     private final EmployeeMapper employeeMapper;
     private final CloudinaryService cloudinaryService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public Employee saveEmployee(EmployeeRequestDTO employeeRequestDTO) {
-        String requestDepartmentName = employeeRequestDTO.departmentName();
+    public Employee registerEmployee(RegisterRequestDTO employeeRequestDTO) {
+
+        // Prevent duplicate accounts for same email (before DB throws for unique column constraint)
+        if (employeeRepository.existsByEmail(employeeRequestDTO.email()))
+            throw new DuplicateResourceException(Employee.class, "email", employeeRequestDTO.email());
+
         Employee employee = employeeMapper.toEmployee(employeeRequestDTO);
 
-        if (requestDepartmentName != null) {
+        employee.setPassword(passwordEncoder.encode(employeeRequestDTO.password()));
+
+        String requestDepartmentName = employeeRequestDTO.departmentName();
+        if (requestDepartmentName != null && !requestDepartmentName.isBlank()) {
             Department department = departmentService.getDepartmentByNameOrCreate(requestDepartmentName);
             employee.setDepartment(department);
         }
@@ -63,7 +72,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public Employee putEmployee(Long id, EmployeeRequestDTO employeeRequestDTO) {
+    public Employee putEmployee(Long id, RegisterRequestDTO employeeRequestDTO) {
         Employee fetchedEmployee = employeeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Employee.class, id));
 
         employeeMapper.updateEmployeeFromRequestDTO(fetchedEmployee, employeeRequestDTO);

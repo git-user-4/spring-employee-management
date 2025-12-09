@@ -1,10 +1,11 @@
 package com.tu.course.employee_management.mapper;
 
+import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
+import com.tu.course.employee_management.dto.auth.RegisterResponseDTO;
 import com.tu.course.employee_management.dto.employee.*;
 import com.tu.course.employee_management.model.Employee;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
 import com.tu.course.employee_management.service.CloudinaryService;
-import lombok.RequiredArgsConstructor;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,18 +32,22 @@ public abstract class EmployeeMapper {
         return cloudinaryService.generateUrl(avatarPublicId, 200, 200); // Can adjust image size
     }
 
+    @Mapping(target = "jwtToken", source = "jwtToken")
+    @Mapping(target = "employeeData", source = "employee")
+    public abstract RegisterResponseDTO toRegisterResponseDTO(Employee employee, String jwtToken);
+
     public abstract EmployeeSummaryResponseDTO toEmployeeSummaryResponseDTO(Employee employee);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "department", ignore = true)
-    public abstract Employee toEmployee(EmployeeRequestDTO employeeRequestDTO);
+    public abstract Employee toEmployee(RegisterRequestDTO employeeRequestDTO);
 
     public abstract List<EmployeeNameResponseDTO> toEmployeeNameResponseDTOList(List<EmployeeNameProjection> employeeNameProjections);
 
     public abstract List<EmployeeNameResponseDTO> toEmployeeNameResponseDTOListFromProjectionDTOList(List<EmployeeNameProjectionDTO> employeeNameProjectionDTOs);
 
     @Mapping(target = "department", ignore = true)
-    public abstract void updateEmployeeFromRequestDTO(@MappingTarget Employee entity, EmployeeRequestDTO dto);
+    public abstract void updateEmployeeFromRequestDTO(@MappingTarget Employee entity, RegisterRequestDTO dto);
 
     // Showcasing alternative method to trim endpoint inputs
     /*
