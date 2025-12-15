@@ -7,6 +7,7 @@ import com.tu.course.employee_management.exception.ResourceNotFoundException;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
 import com.tu.course.employee_management.model.Department;
 import com.tu.course.employee_management.model.Employee;
+import com.tu.course.employee_management.model.Role;
 import com.tu.course.employee_management.service.EmployeeService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -54,6 +55,7 @@ public class EmployeeControllerTest {
         EmployeeResponseDTO responseDTO = new EmployeeResponseDTO(
                 id,
                 "doe18@abv.bg",
+                Role.USER,
                 "John",
                 "Doe",
                 "123456789",
@@ -121,6 +123,7 @@ public class EmployeeControllerTest {
         EmployeeResponseDTO responseDTO1 = new EmployeeResponseDTO(
                 1L,
                 "doe18@abv.bg",
+                Role.USER,
                 "John",
                 "Doe",
                 "123456789",
@@ -132,6 +135,7 @@ public class EmployeeControllerTest {
         EmployeeResponseDTO responseDTO2 = new EmployeeResponseDTO(
                 2L,
                 "tommy@gmail.com",
+                Role.USER,
                 "Toma",
                 "Tomov",
                 "0875721957",
@@ -194,6 +198,7 @@ public class EmployeeControllerTest {
         EmployeeResponseDTO responseDTO = new EmployeeResponseDTO(
                 1L,
                 "johnny4@abv.bg",
+                Role.ADMIN,
                 "John",
                 "Doe",
                 "123456789",

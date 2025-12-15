@@ -1,6 +1,7 @@
 package com.tu.course.employee_management.startup.seeder;
 
 import com.tu.course.employee_management.model.Employee;
+import com.tu.course.employee_management.model.Role;
 import com.tu.course.employee_management.repository.DepartmentRepository;
 import com.tu.course.employee_management.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class EmployeeSeeder implements CommandLineRunner {
         Employee employee1 = Employee.builder()
                 .email("v.vasilev@abv.bg")
                 .password(passwordEncoder.encode("myPass1234"))
+                .role(Role.USER)
                 .firstName("Valentin")
                 .lastName("Vasilev")
                 .phoneNumber("0889124123")
@@ -34,6 +36,7 @@ public class EmployeeSeeder implements CommandLineRunner {
         Employee employee2 = Employee.builder()
                 .email("ivpetrov@gmail.com")
                 .password(passwordEncoder.encode("changeMe4321"))
+                .role(Role.ADMIN)
                 .firstName("Ivan")
                 .lastName("Petrov")
                 .phoneNumber("0887512397")
@@ -41,7 +44,8 @@ public class EmployeeSeeder implements CommandLineRunner {
 
         Employee employee3 = Employee.builder()
                 .email("johnny4@abv.bg")
-                .password(passwordEncoder.encode("_secretPass_"))
+                .password(passwordEncoder.encode("secretPass1"))
+                .role(Role.USER)
                 .firstName("Johnny")
                 .lastName("Bravo")
                 .phoneNumber("0871234123")

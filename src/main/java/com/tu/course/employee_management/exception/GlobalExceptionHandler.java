@@ -95,4 +95,17 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    // Catches Illegal State Violations
+    @ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail handleIllegalState(IllegalStateException ex,
+                                            HttpServletRequest req) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(403);
+        pd.setTitle("Operation Not Allowed");
+        pd.setDetail(ex.getMessage());
+        pd.setInstance(URI.create(req.getRequestURI()));
+
+        return pd;
+    }
+
 }

@@ -40,7 +40,7 @@ public abstract class EmployeeMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "department", ignore = true)
-    public abstract Employee toEmployee(RegisterRequestDTO employeeRequestDTO);
+    public abstract Employee toEmployee(RegisterRequestDTO registerRequestDTO);
 
     public abstract List<EmployeeNameResponseDTO> toEmployeeNameResponseDTOList(List<EmployeeNameProjection> employeeNameProjections);
 

@@ -1,5 +1,6 @@
 package com.tu.course.employee_management.service;
 
+import com.tu.course.employee_management.config.security.CustomUserPrincipal;
 import com.tu.course.employee_management.dto.employee.EmployeeNameProjectionDTO;
 import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
 import com.tu.course.employee_management.exception.DuplicateResourceException;
@@ -7,9 +8,12 @@ import com.tu.course.employee_management.exception.ResourceNotFoundException;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
 import com.tu.course.employee_management.model.Department;
 import com.tu.course.employee_management.model.Employee;
+import com.tu.course.employee_management.model.Role;
 import com.tu.course.employee_management.repository.EmployeeRepository;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,17 +34,19 @@ public class EmployeeService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public Employee registerEmployee(RegisterRequestDTO employeeRequestDTO) {
+    public Employee registerEmployee(RegisterRequestDTO registerRequestDTO) {
 
         // Prevent duplicate accounts for same email (before DB throws for unique column constraint)
-        if (employeeRepository.existsByEmail(employeeRequestDTO.email()))
-            throw new DuplicateResourceException(Employee.class, "email", employeeRequestDTO.email());
+        if (employeeRepository.existsByEmail(registerRequestDTO.email()))
+            throw new DuplicateResourceException(Employee.class, "email", registerRequestDTO.email());
 
-        Employee employee = employeeMapper.toEmployee(employeeRequestDTO);
+        Employee employee = employeeMapper.toEmployee(registerRequestDTO);
 
-        employee.setPassword(passwordEncoder.encode(employeeRequestDTO.password()));
+        employee.setPassword(passwordEncoder.encode(registerRequestDTO.password()));
 
-        String requestDepartmentName = employeeRequestDTO.departmentName();
+        employee.setRole(Role.USER);
+
+        String requestDepartmentName = registerRequestDTO.departmentName();
         if (requestDepartmentName != null && !requestDepartmentName.isBlank()) {
             Department department = departmentService.getDepartmentByNameOrCreate(requestDepartmentName);
             employee.setDepartment(department);
@@ -133,6 +139,31 @@ public class EmployeeService {
         cloudinaryService.deleteImage(fetchedEmployee.getAvatarPublicId());
         fetchedEmployee.setAvatarPublicId(null);
         employeeRepository.save(fetchedEmployee);
+    }
+
+//    @Transactional
+//    public Employee patchEmployeeRole(Long employeeId, Role newRole) {
+//        Employee fetchedEmployee = getEmployeeOrThrow(employeeId);
+//        Role currentRole = fetchedEmployee.getRole();
+//
+//        fetchedEmployee.setRole(newRole);
+//        return employeeRepository.save(fetchedEmployee);
+//    }
+
+    @Transactional
+    public Employee patchEmployeeRole(Long employeeId, Role newRole) {
+        Employee fetchedEmployee = getEmployeeOrThrow(employeeId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserPrincipal principal = (CustomUserPrincipal) auth.getPrincipal();
+        Long currentUserId = principal.getEmployeeId();
+
+        if (fetchedEmployee.getId().equals(currentUserId)) {
+            throw new IllegalStateException("You cannot change your own role");
+        }
+
+        fetchedEmployee.setRole(newRole);
+        return employeeRepository.save(fetchedEmployee);
     }
 
 }

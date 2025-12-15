@@ -2,6 +2,7 @@ package com.tu.course.employee_management.repository;
 
 import com.tu.course.employee_management.dto.employee.EmployeeNameProjectionDTO;
 import com.tu.course.employee_management.model.Employee;
+import com.tu.course.employee_management.model.Role;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

@@ -41,4 +41,15 @@ public class Employee {
     @OnDelete(action = OnDeleteAction.SET_NULL) // Set department FK to null on department delete
     private Department department;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @PrePersist
+    public void prePersist() {
+        if (role == null) {
+            role = Role.USER; // Default role before saving in DB
+        }
+    }
+
 }

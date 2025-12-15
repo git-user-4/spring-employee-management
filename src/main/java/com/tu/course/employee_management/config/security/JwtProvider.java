@@ -1,4 +1,4 @@
-package com.tu.course.employee_management.config;
+package com.tu.course.employee_management.config.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -26,34 +26,35 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getKey())
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
-
-        Claims claims = Jwts.parser()
+    public Claims extractAllClaims(String token) {
+        return Jwts.parser()
                 .verifyWith(getKey())
                 .build()
                 .parseClaimsJws(token)
                 .getPayload();
+    }
 
-        String email = claims.getSubject();
+    public String getEmailFromToken(String token) {
+        return extractAllClaims(token).getSubject();
+    }
 
-        return email;
+    public String getRoleFromToken(String token) {
+        return extractAllClaims(token).get("role", String.class);
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .verifyWith(getKey())
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parser().verifyWith(getKey()).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;

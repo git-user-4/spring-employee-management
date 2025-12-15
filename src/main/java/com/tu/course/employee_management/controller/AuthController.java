@@ -1,6 +1,7 @@
 package com.tu.course.employee_management.controller;
 
-import com.tu.course.employee_management.config.JwtProvider;
+import com.tu.course.employee_management.config.security.CustomUserPrincipal;
+import com.tu.course.employee_management.config.security.JwtProvider;
 import com.tu.course.employee_management.dto.auth.LoginRequestDTO;
 import com.tu.course.employee_management.dto.auth.LoginResponseDTO;
 import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
@@ -31,7 +32,8 @@ public class AuthController {
     private final EmployeeMapper employeeMapper;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<LoginResponseDTO> login(
+            @Valid @RequestBody LoginRequestDTO loginRequestDTO) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -40,21 +42,31 @@ public class AuthController {
                 )
         );
 
-        String token = jwtProvider.generateToken(authentication.getName());
+        CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+        String token = jwtProvider.generateToken(
+                principal.getEmail(),
+                principal.getAuthorities().iterator().next().getAuthority()
+        );
+
         return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponseDTO> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+    public ResponseEntity<RegisterResponseDTO> register(
+            @Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
 
         Employee registeredEmployee = employeeService.registerEmployee(registerRequestDTO);
-        String token = jwtProvider.generateToken(registeredEmployee.getEmail());
-        RegisterResponseDTO registerResponseDTO = employeeMapper.toRegisterResponseDTO(registeredEmployee, token);
 
-        return new ResponseEntity<>(
-                registerResponseDTO,
-                HttpStatus.CREATED
+        String token = jwtProvider.generateToken(
+                registeredEmployee.getEmail(),
+                "ROLE_" + registeredEmployee.getRole().name()
         );
+
+        RegisterResponseDTO registerResponseDTO =
+                employeeMapper.toRegisterResponseDTO(registeredEmployee, token);
+
+        return new ResponseEntity<>(registerResponseDTO, HttpStatus.CREATED);
     }
 
 }
