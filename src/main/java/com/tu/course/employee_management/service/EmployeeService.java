@@ -12,6 +12,9 @@ import com.tu.course.employee_management.model.Role;
 import com.tu.course.employee_management.repository.EmployeeRepository;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +28,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
@@ -36,6 +40,7 @@ public class EmployeeService {
     @Transactional
     public Employee registerEmployee(RegisterRequestDTO registerRequestDTO) {
 
+        log.debug("Checking if email={} already exists", registerRequestDTO.email());
         // Prevent duplicate accounts for same email (before DB throws for unique column constraint)
         if (employeeRepository.existsByEmail(registerRequestDTO.email()))
             throw new DuplicateResourceException(Employee.class, "email", registerRequestDTO.email());
@@ -52,6 +57,7 @@ public class EmployeeService {
             employee.setDepartment(department);
         }
 
+        log.info("New user registered with email:{}", registerRequestDTO.email());
         return employeeRepository.save(employee);
     }
 
@@ -59,8 +65,8 @@ public class EmployeeService {
         return employeeRepository.findById(id);
     }
 
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    public Page<Employee> getAllEmployees(Pageable pageable) {
+        return employeeRepository.findAll(pageable);
     }
 
     @Transactional
@@ -141,15 +147,20 @@ public class EmployeeService {
         employeeRepository.save(fetchedEmployee);
     }
 
-//    @Transactional
-//    public Employee patchEmployeeRole(Long employeeId, Role newRole) {
-//        Employee fetchedEmployee = getEmployeeOrThrow(employeeId);
-//        Role currentRole = fetchedEmployee.getRole();
-//
-//        fetchedEmployee.setRole(newRole);
-//        return employeeRepository.save(fetchedEmployee);
-//    }
 
+
+    /**
+     * Updates User's Role.
+     *
+     * @param employeeId id of the user account's PP to change
+     * @param newRole    the new role to be assigned
+     * @return The employee with edited role
+     * @throws IllegalStateException if the user is trying to update their own role
+     * @see #patchEmployeeAvatar(Long, MultipartFile)
+     * @since Exercise 11
+     */
+//     Showcase @deprecated Javadoc Annotation:
+//    * @deprecated Use {@link #deleteEmployeeAvatar(Long)} instead.
     @Transactional
     public Employee patchEmployeeRole(Long employeeId, Role newRole) {
         Employee fetchedEmployee = getEmployeeOrThrow(employeeId);

@@ -33,4 +33,10 @@ build/
 .vscode/
 
 ### Spring Boot Environment Files ###
-application-dev.properties
+application-*.properties
+.env
+.env.*
+!.env.example
+
+### Logging ###
+logs/

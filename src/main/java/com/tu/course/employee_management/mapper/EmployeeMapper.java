@@ -8,6 +8,7 @@ import com.tu.course.employee_management.repository.projection.EmployeeNameProje
 import com.tu.course.employee_management.service.CloudinaryService;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -30,6 +31,16 @@ public abstract class EmployeeMapper {
     protected String generateAvatarUrl(String avatarPublicId) {
         if (avatarPublicId == null || avatarPublicId.isBlank()) return null;
         return cloudinaryService.generateUrl(avatarPublicId, 200, 200); // Can adjust image size
+    }
+
+    public EmployeePageResponseDTO toEmployeePageResponseDTO(Page<Employee> page) {
+        return new EmployeePageResponseDTO(
+                page.getContent().stream().map(this::toEmployeeResponseDTO).toList(),
+                page.getTotalPages(),
+                page.getTotalElements(),
+                page.getNumber(),
+                page.getSize()
+        );
     }
 
     @Mapping(target = "jwtToken", source = "jwtToken")

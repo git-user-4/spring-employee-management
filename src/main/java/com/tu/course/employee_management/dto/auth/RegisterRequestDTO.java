@@ -34,7 +34,7 @@ public record RegisterRequestDTO(
 ) {
     public RegisterRequestDTO {
         email = safeTrim(email);
-        //don't trim password
+        // Don't trim password
         firstName = safeTrim(firstName);
         lastName = safeTrim(lastName);
         phoneNumber = safeTrim(phoneNumber);

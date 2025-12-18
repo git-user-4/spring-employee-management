@@ -2,6 +2,7 @@ package com.tu.course.employee_management.controller;
 
 import com.tu.course.employee_management.dto.employee.EmployeeNameProjectionDTO;
 import com.tu.course.employee_management.dto.auth.RegisterRequestDTO;
+import com.tu.course.employee_management.dto.employee.EmployeePageResponseDTO;
 import com.tu.course.employee_management.dto.employee.EmployeeResponseDTO;
 import com.tu.course.employee_management.dto.employee.EmployeeNameResponseDTO;
 import com.tu.course.employee_management.mapper.EmployeeMapper;
@@ -9,14 +10,27 @@ import com.tu.course.employee_management.model.Employee;
 import com.tu.course.employee_management.model.Role;
 import com.tu.course.employee_management.repository.projection.EmployeeNameProjection;
 import com.tu.course.employee_management.service.EmployeeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +44,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Employee Controller", description = "Operations about employee users")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -42,9 +57,12 @@ public class EmployeeController {
         return new ResponseEntity<>(employeeMapper.toEmployeeResponseDTO(fetchedEmployee), HttpStatus.OK);
     }
 
-    @GetMapping
-    public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployees() {
-        return new ResponseEntity<>(employeeMapper.toEmployeeResponseDTOList(employeeService.getAllEmployees()), HttpStatus.OK);
+    @GetMapping()
+    public ResponseEntity<EmployeePageResponseDTO> getAllEmployees(
+            @ParameterObject @PageableDefault(size = 2, sort = "id") Pageable pageable
+    ) {
+        Page<Employee> page = employeeService.getAllEmployees(pageable);
+        return new ResponseEntity<>(employeeMapper.toEmployeePageResponseDTO(page), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -109,11 +127,14 @@ public class EmployeeController {
     @PreAuthorize("hasRole('ADMIN') or #id == principal.employeeId")
     @PatchMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EmployeeResponseDTO> patchEmployeeAvatar(@PathVariable @Positive Long id,
-                                                                   @RequestParam MultipartFile file) {
+                                                                   @RequestParam @NotBlank MultipartFile file) {
         Employee patchedEmployee = employeeService.patchEmployeeAvatar(id, file);
         return new ResponseEntity<>(employeeMapper.toEmployeeResponseDTO(patchedEmployee), HttpStatus.OK);
     }
 
+    @Operation(summary = "Delete employee's profile picture (avatar) (Requires: ADMIN/SAME USER)")
+    @ApiResponse(responseCode = "200", description = "Avatar deleted")
+    @ApiResponse(responseCode = "403", description = "User Unauthorized")
     @PreAuthorize("hasRole('ADMIN') or #id == principal.employeeId")
     @DeleteMapping("/{id}/avatar")
     public ResponseEntity<Void> deleteEmployeeAvatar(@PathVariable @Positive Long id) {
@@ -121,9 +142,25 @@ public class EmployeeController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Change employee's role (Requires: ADMIN)",
+            description = "Returns the employee with updated role.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Role Updated",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = EmployeeResponseDTO.class))),
+            @ApiResponse(responseCode = "403",
+                    description = "User Unauthorized",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @PatchMapping("/{id}/role")
-    public ResponseEntity<EmployeeResponseDTO> patchEmployeeRole(@PathVariable @Positive Long id,
-                                                                 @RequestParam Role newRole) {
+    public ResponseEntity<EmployeeResponseDTO> patchEmployeeRole(
+            @Parameter(description = "Employee id", example = "2", required = true)
+            @PathVariable @Positive Long id,
+
+            @Parameter(description = "Role to be assigned", example = "ADMIN", required = true)
+            @RequestParam @NotBlank Role newRole) {
         Employee updatedEmployee = employeeService.patchEmployeeRole(id, newRole);
         return new ResponseEntity<>(employeeMapper.toEmployeeResponseDTO(updatedEmployee), HttpStatus.OK);
     }

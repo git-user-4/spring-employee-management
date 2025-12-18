@@ -6,12 +6,14 @@ import com.cloudinary.api.ApiResponse;
 import com.cloudinary.utils.ObjectUtils;
 import com.tu.course.employee_management.exception.CloudinaryException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CloudinaryService {
@@ -62,7 +64,7 @@ public class CloudinaryService {
             for (Map<String, Object> resource : resources) {
                 String publicId = (String) resource.get("public_id");
                 deleteImage(publicId);
-                System.out.println("Deleted image: " + publicId);
+                log.info("Deleted image: {}", publicId);
             }
         } catch (Exception e) {
             throw new CloudinaryException(CloudinaryException.Operation.DELETE, e);
